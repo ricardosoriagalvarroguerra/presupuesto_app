@@ -37,46 +37,26 @@ def pagina_vpo():
     # Cargar datos
     datos = cargar_datos()
 
-    # Agregar selectbox para seleccionar la vista
-    vistas = ["Vista Original", "Presupuesto K2B"]
-    vista_seleccionada = st.selectbox("Seleccionar Vista:", vistas)
+    # Filtrar para consolidar únicamente las misiones
+    misiones = datos[datos['categoria'] == 'Misiones']
 
-    if vista_seleccionada == "Vista Original":
-        # Mostrar tabla original con filtros
-        st.subheader("Vista Original")
-        st.dataframe(datos)
-    
-    elif vista_seleccionada == "Presupuesto K2B":
-        st.subheader("Presupuesto K2B")
+    # Consolidar por país y subcategoría
+    consolidado = misiones.groupby(['pais', 'subcategoria'], as_index=False)['sum_monto'].sum()
 
-        # Filtrar para consolidar únicamente las misiones
-        misiones = datos[datos['categoria'] == 'Misiones']
+    # Calcular totales por país
+    totales_por_pais = consolidado.groupby('pais', as_index=False)['sum_monto'].sum()
+    total_general = totales_por_pais['sum_monto'].sum()
 
-        # Consolidar por país y subcategoría
-        consolidado = misiones.groupby(['pais', 'subcategoria'], as_index=False)['sum_monto'].sum()
+    # Mostrar el diseño estilizado
+    st.write(f"### Total General: {total_general:,.2f}")
 
-        # Calcular totales por país
-        totales_por_pais = consolidado.groupby('pais', as_index=False)['sum_monto'].sum()
-        total_general = totales_por_pais['sum_monto'].sum()
-
-        # Mostrar el diseño estilizado
-        st.markdown(f"<h2 style='text-align: center; color: #4A90E2;'>Total General: {total_general:,.2f}</h2>", unsafe_allow_html=True)
-
-        for pais in totales_por_pais['pais'].unique():
-            # Mostrar el país como un título
-            total_pais = totales_por_pais[totales_por_pais['pais'] == pais]['sum_monto'].values[0]
-            st.markdown(f"<h3 style='color: #2E86C1;'>{pais} - Total: {total_pais:,.2f}</h3>", unsafe_allow_html=True)
-
-            # Mostrar las subcategorías con un diseño estilizado
+    for pais in totales_por_pais['pais'].unique():
+        # Crear contenedor expandible por país
+        with st.expander(f"{pais} - Total: {totales_por_pais[totales_por_pais['pais'] == pais]['sum_monto'].values[0]:,.2f}"):
+            # Mostrar las subcategorías y montos del país
             subcategorias_pais = consolidado[consolidado['pais'] == pais]
             for _, row in subcategorias_pais.iterrows():
-                st.markdown(
-                    f"<p style='margin-left: 20px; color: #34495E;'>• {row['subcategoria']}: <b>{row['sum_monto']:,.2f}</b></p>",
-                    unsafe_allow_html=True,
-                )
-
-        # Total General al final
-        st.markdown(f"<h2 style='text-align: center; color: #4A90E2;'>Total General: {total_general:,.2f}</h2>", unsafe_allow_html=True)
+                st.markdown(f"- **{row['subcategoria']}:** {row['sum_monto']:,.2f}")
 
 # Menú de navegación con selectbox
 menu = st.sidebar.selectbox(
