@@ -39,7 +39,7 @@ def pagina_vpo():
     datos = cargar_datos()
 
     # Filtrar datos para la vista consolidada de Misiones
-    consolidado = datos.groupby(
+    consolidado = datos[datos['categoria'] == 'Misiones'].groupby(
         ['pais', 'subcategoria'], as_index=False
     ).agg({'sum_monto': 'sum'})
 
@@ -54,6 +54,7 @@ def pagina_vpo():
     gb = GridOptionsBuilder.from_dataframe(consolidado)
     gb.configure_grid_options(treeData=True, groupDefaultExpanded=-1)
     gb.configure_column("pais", headerName="Presupuesto para K2B")
+    gb.configure_column("subcategoria", headerName="Subcategoría")
     gb.configure_column("sum_monto", headerName="Importe", type=["numericColumn", "numberColumnFilter"])
     
     grid_options = gb.build()
@@ -74,3 +75,23 @@ if menu == "Inicio":
 elif menu == "VPO":
     if verificar_contraseña("VPO"):
         pagina_vpo()
+elif menu == "VPD":
+    if verificar_contraseña("VPD"):
+        st.title("VPD - Presupuesto")
+        st.write("Esta página estará disponible próximamente.")
+elif menu == "VPF":
+    if verificar_contraseña("VPF"):
+        st.title("VPF - Presupuesto")
+        st.write("Esta página estará disponible próximamente.")
+elif menu == "VPE":
+    if verificar_contraseña("VPE"):
+        st.title("VPE - Presupuesto")
+        st.write("Esta página estará disponible próximamente.")
+elif menu == "PE":
+    if verificar_contraseña("PE"):
+        st.title("PE - Presupuesto")
+        st.write("Esta página estará disponible próximamente.")
+elif menu == "Consolidado":
+    if verificar_contraseña("Consolidado"):
+        st.title("Consolidado - Presupuesto")
+        st.write("Esta página estará disponible próximamente.")
