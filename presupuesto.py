@@ -34,10 +34,6 @@ st.set_page_config(page_title="Presupuesto - 2025 VPD", layout="wide")
 def pagina_principal():
     st.title("Presupuesto - 2025 VPD")
 
-def pagina_vpd():
-    st.title("VPD - Presupuesto")
-    st.write("Esta página estará disponible próximamente.")
-
 def pagina_vpo():
     st.title("VPO - Presupuesto")
     
@@ -52,6 +48,9 @@ def pagina_vpo():
     tipo_objetivo = st.sidebar.multiselect(
         "Seleccionar Tipo(s) de Objetivo:", options=datos['tipo_objetivo'].unique(), default=datos['tipo_objetivo'].unique()
     )
+    subcategoria = st.sidebar.multiselect(
+        "Seleccionar Subcategoría(s):", options=datos['subcategoria'].unique(), default=datos['subcategoria'].unique()
+    )
     item_presupuesto = st.sidebar.multiselect(
         "Seleccionar Item(s) de Presupuesto:", options=datos['item'].unique(), default=datos['item'].unique()
     )
@@ -60,6 +59,7 @@ def pagina_vpo():
     datos_filtrados = datos[
         (datos['pais'].isin(pais)) &
         (datos['tipo_objetivo'].isin(tipo_objetivo)) &
+        (datos['subcategoria'].isin(subcategoria)) &
         (datos['item'].isin(item_presupuesto))
     ]
     
@@ -74,6 +74,10 @@ def pagina_vpo():
         st.warning("No se encontraron datos para los filtros seleccionados.")
     else:
         st.dataframe(datos_filtrados)
+
+def pagina_vpd():
+    st.title("VPD - Presupuesto")
+    st.write("Esta página estará disponible próximamente.")
 
 def pagina_vpf():
     st.title("VPF - Presupuesto")
