@@ -55,16 +55,25 @@ def pagina_vpo():
         # Consolidar por país y subcategoría
         consolidado = misiones.groupby(['pais', 'subcategoria'], as_index=False)['sum_monto'].sum()
 
-        # Agregar un total general al final
-        total_general = pd.DataFrame({
-            'pais': ['Total general'],
-            'subcategoria': [''],
-            'sum_monto': [consolidado['sum_monto'].sum()]
-        })
-        consolidado = pd.concat([consolidado, total_general], ignore_index=True)
+        # Calcular totales por país
+        totales_por_pais = consolidado.groupby('pais', as_index=False)['sum_monto'].sum()
+        total_general = totales_por_pais['sum_monto'].sum()
 
-        # Mostrar el consolidado con estilo de tabla
-        st.table(consolidado)
+        # Mostrar el diseño
+        st.write(f"### Total General: {total_general:,.2f}")
+
+        for pais in totales_por_pais['pais'].unique():
+            # Mostrar el país y su total
+            total_pais = totales_por_pais[totales_por_pais['pais'] == pais]['sum_monto'].values[0]
+            st.write(f"**{pais} - Total: {total_pais:,.2f}**")
+
+            # Mostrar las subcategorías y montos del país
+            subcategorias_pais = consolidado[consolidado['pais'] == pais]
+            for _, row in subcategorias_pais.iterrows():
+                st.write(f"- {row['subcategoria']}: {row['sum_monto']:,.2f}")
+
+        # Total General
+        st.write(f"**Total General:** {total_general:,.2f}")
 
 # Menú de navegación con selectbox
 menu = st.sidebar.selectbox(
