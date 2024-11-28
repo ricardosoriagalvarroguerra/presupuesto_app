@@ -25,7 +25,7 @@ def verificar_contraseña(pagina):
 
 # Cargar los datos desde el archivo
 def cargar_datos():
-    return pd.read_excel("Prueba_VPD.xlsx")
+    return pd.read_excel("Prueba_VPD.xlsx", sheet_name="main_vpo")
 
 # Configurar el menú de la aplicación
 st.set_page_config(page_title="Presupuesto - 2025 VPD", layout="wide")
@@ -36,32 +36,36 @@ def pagina_principal():
 
 def pagina_vpd():
     st.title("VPD - Presupuesto")
+    st.write("Esta página estará disponible próximamente.")
+
+def pagina_vpo():
+    st.title("VPO - Presupuesto")
     
     # Cargar datos
     datos = cargar_datos()
     
     # Crear filtros
     st.sidebar.header("Filtros")
-    area = st.sidebar.selectbox("Seleccionar Área (vpd_area):", options=datos['vpd_area'].unique())
     pais = st.sidebar.selectbox("Seleccionar País:", options=datos['pais'].unique())
-    total_min = st.sidebar.number_input("Monto mínimo (Totales):", min_value=0, value=0)
-
+    tipo_objetivo = st.sidebar.selectbox("Seleccionar Tipo de Objetivo:", options=datos['tipo_objetivo'].unique())
+    item_presupuesto = st.sidebar.selectbox("Seleccionar Item de Presupuesto:", options=datos['item'].unique())
+    
     # Filtrar datos
     datos_filtrados = datos[
-        (datos['vpd_area'] == area) &
         (datos['pais'] == pais) &
-        (datos['total'] >= total_min)
+        (datos['tipo_objetivo'] == tipo_objetivo) &
+        (datos['item'] == item_presupuesto)
     ]
     
-    # Mostrar tabla filtrada
+    # Calcular el total
+    total_monto = datos_filtrados['sum_monto'].sum()
+    
+    # Mostrar el total y la tabla
+    st.metric(label="Total (sum_monto)", value=f"{total_monto:,.2f}")
     st.dataframe(datos_filtrados)
 
 def pagina_vpf():
     st.title("VPF - Presupuesto")
-    st.write("Esta página estará disponible próximamente.")
-
-def pagina_vpo():
-    st.title("VPO - Presupuesto")
     st.write("Esta página estará disponible próximamente.")
 
 def pagina_vpe():
@@ -79,7 +83,7 @@ def pagina_consolidado():
 # Menú de navegación con selectbox
 menu = st.sidebar.selectbox(
     "Selecciona una página:",
-    ["Inicio", "VPD", "VPF", "VPO", "VPE", "PE", "Consolidado"]
+    ["Inicio", "VPD", "VPO", "VPF", "VPE", "PE", "Consolidado"]
 )
 
 # Mostrar contenido según autenticación
@@ -89,12 +93,12 @@ if menu == "Inicio":
 elif menu == "VPD":
     if verificar_contraseña("VPD"):
         pagina_vpd()
-elif menu == "VPF":
-    if verificar_contraseña("VPF"):
-        pagina_vpf()
 elif menu == "VPO":
     if verificar_contraseña("VPO"):
         pagina_vpo()
+elif menu == "VPF":
+    if verificar_contraseña("VPF"):
+        pagina_vpf()
 elif menu == "VPE":
     if verificar_contraseña("VPE"):
         pagina_vpe()
