@@ -49,26 +49,22 @@ def pagina_vpo():
     elif vista_seleccionada == "Presupuesto K2B":
         st.subheader("Presupuesto K2B")
 
-        # Filtrar para consolidar las Misiones
-        consolidado = datos[datos['categoria'] == 'Misiones'].groupby(
-            ['pais', 'subcategoria'], as_index=False
-        ).agg({'sum_monto': 'sum'})
+        # Filtrar para consolidar únicamente las misiones
+        misiones = datos[datos['categoria'] == 'Misiones']
 
-        # Generar tabla consolidada con totales por país y subcategorías
-        tabla_consolidada = pd.pivot_table(
-            consolidado,
-            values='sum_monto',
-            index=['pais'],
-            columns=['subcategoria'],
-            aggfunc='sum',
-            margins=True,
-            margins_name='Total general',
-            fill_value=0
-        ).reset_index()
+        # Consolidar por país y subcategoría
+        consolidado = misiones.groupby(['pais', 'subcategoria'], as_index=False)['sum_monto'].sum()
 
-        # Renombrar columnas
-        tabla_consolidada.columns.name = None  # Quitar nombre de las columnas del pivot
-        st.dataframe(tabla_consolidada)
+        # Agregar un total general al final
+        total_general = pd.DataFrame({
+            'pais': ['Total general'],
+            'subcategoria': [''],
+            'sum_monto': [consolidado['sum_monto'].sum()]
+        })
+        consolidado = pd.concat([consolidado, total_general], ignore_index=True)
+
+        # Mostrar el consolidado con estilo de tabla
+        st.table(consolidado)
 
 # Menú de navegación con selectbox
 menu = st.sidebar.selectbox(
