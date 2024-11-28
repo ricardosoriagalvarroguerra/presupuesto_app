@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from st_aggrid import GridOptionsBuilder, AgGrid
 
 # Configurar contraseñas por página
 PASSWORDS = {
@@ -31,36 +30,45 @@ def cargar_datos():
 # Configurar el menú de la aplicación
 st.set_page_config(page_title="Presupuesto - 2025 VPD", layout="wide")
 
-# Crear la página con vista desplegable
+# Crear la página con la nueva vista
 def pagina_vpo():
     st.title("VPO - Presupuesto")
     
     # Cargar datos
     datos = cargar_datos()
 
-    # Filtrar datos para la vista consolidada de Misiones
-    consolidado = datos[datos['categoria'] == 'Misiones'].groupby(
-        ['pais', 'subcategoria'], as_index=False
-    ).agg({'sum_monto': 'sum'})
+    # Agregar selectbox para seleccionar la vista
+    vistas = ["Vista Original", "Presupuesto K2B"]
+    vista_seleccionada = st.selectbox("Seleccionar Vista:", vistas)
 
-    # Crear jerarquía para tabla desplegable
-    consolidado['parent'] = consolidado['pais']
-    consolidado.loc[consolidado['subcategoria'] == 'Misiones', 'parent'] = ''
-
-    # Crear tabla en formato desplegable con st_aggrid
-    st.subheader("Presupuesto K2B")
-
-    # Configurar opciones para la tabla
-    gb = GridOptionsBuilder.from_dataframe(consolidado)
-    gb.configure_grid_options(treeData=True, groupDefaultExpanded=-1)
-    gb.configure_column("pais", headerName="Presupuesto para K2B")
-    gb.configure_column("subcategoria", headerName="Subcategoría")
-    gb.configure_column("sum_monto", headerName="Importe", type=["numericColumn", "numberColumnFilter"])
+    if vista_seleccionada == "Vista Original":
+        # Mostrar tabla original con filtros
+        st.subheader("Vista Original")
+        st.dataframe(datos)
     
-    grid_options = gb.build()
+    elif vista_seleccionada == "Presupuesto K2B":
+        st.subheader("Presupuesto K2B")
 
-    # Mostrar la tabla interactiva
-    AgGrid(consolidado, gridOptions=grid_options, enable_enterprise_modules=True)
+        # Filtrar para consolidar las Misiones
+        consolidado = datos[datos['categoria'] == 'Misiones'].groupby(
+            ['pais', 'subcategoria'], as_index=False
+        ).agg({'sum_monto': 'sum'})
+
+        # Generar tabla consolidada con totales por país y subcategorías
+        tabla_consolidada = pd.pivot_table(
+            consolidado,
+            values='sum_monto',
+            index=['pais'],
+            columns=['subcategoria'],
+            aggfunc='sum',
+            margins=True,
+            margins_name='Total general',
+            fill_value=0
+        ).reset_index()
+
+        # Renombrar columnas
+        tabla_consolidada.columns.name = None  # Quitar nombre de las columnas del pivot
+        st.dataframe(tabla_consolidada)
 
 # Menú de navegación con selectbox
 menu = st.sidebar.selectbox(
@@ -75,23 +83,3 @@ if menu == "Inicio":
 elif menu == "VPO":
     if verificar_contraseña("VPO"):
         pagina_vpo()
-elif menu == "VPD":
-    if verificar_contraseña("VPD"):
-        st.title("VPD - Presupuesto")
-        st.write("Esta página estará disponible próximamente.")
-elif menu == "VPF":
-    if verificar_contraseña("VPF"):
-        st.title("VPF - Presupuesto")
-        st.write("Esta página estará disponible próximamente.")
-elif menu == "VPE":
-    if verificar_contraseña("VPE"):
-        st.title("VPE - Presupuesto")
-        st.write("Esta página estará disponible próximamente.")
-elif menu == "PE":
-    if verificar_contraseña("PE"):
-        st.title("PE - Presupuesto")
-        st.write("Esta página estará disponible próximamente.")
-elif menu == "Consolidado":
-    if verificar_contraseña("Consolidado"):
-        st.title("Consolidado - Presupuesto")
-        st.write("Esta página estará disponible próximamente.")
