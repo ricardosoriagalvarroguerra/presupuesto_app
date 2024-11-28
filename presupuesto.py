@@ -76,8 +76,11 @@ def pagina_consolidado():
     st.title("Consolidado - Presupuesto")
     st.write("Esta página estará disponible próximamente.")
 
-# Menú de navegación
-menu = st.sidebar.radio("Navegación", ["Inicio", "VPD", "VPF", "VPO", "VPE", "PE", "Consolidado"])
+# Menú de navegación con selectbox
+menu = st.sidebar.selectbox(
+    "Selecciona una página:",
+    ["Inicio", "VPD", "VPF", "VPO", "VPE", "PE", "Consolidado"]
+)
 
 # Mostrar contenido según autenticación
 if menu == "Inicio":
