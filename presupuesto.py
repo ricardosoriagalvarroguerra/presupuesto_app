@@ -46,23 +46,34 @@ def pagina_vpo():
     
     # Crear filtros
     st.sidebar.header("Filtros")
-    pais = st.sidebar.selectbox("Seleccionar País:", options=datos['pais'].unique())
-    tipo_objetivo = st.sidebar.selectbox("Seleccionar Tipo de Objetivo:", options=datos['tipo_objetivo'].unique())
-    item_presupuesto = st.sidebar.selectbox("Seleccionar Item de Presupuesto:", options=datos['item'].unique())
+    pais = st.sidebar.multiselect(
+        "Seleccionar País(es):", options=datos['pais'].unique(), default=datos['pais'].unique()
+    )
+    tipo_objetivo = st.sidebar.multiselect(
+        "Seleccionar Tipo(s) de Objetivo:", options=datos['tipo_objetivo'].unique(), default=datos['tipo_objetivo'].unique()
+    )
+    item_presupuesto = st.sidebar.multiselect(
+        "Seleccionar Item(s) de Presupuesto:", options=datos['item'].unique(), default=datos['item'].unique()
+    )
     
     # Filtrar datos
     datos_filtrados = datos[
-        (datos['pais'] == pais) &
-        (datos['tipo_objetivo'] == tipo_objetivo) &
-        (datos['item'] == item_presupuesto)
+        (datos['pais'].isin(pais)) &
+        (datos['tipo_objetivo'].isin(tipo_objetivo)) &
+        (datos['item'].isin(item_presupuesto))
     ]
     
     # Calcular el total
     total_monto = datos_filtrados['sum_monto'].sum()
     
-    # Mostrar el total y la tabla
+    # Mostrar el total
     st.metric(label="Total (sum_monto)", value=f"{total_monto:,.2f}")
-    st.dataframe(datos_filtrados)
+    
+    # Mostrar la tabla, asegurando que sum_monto esté incluida
+    if datos_filtrados.empty:
+        st.warning("No se encontraron datos para los filtros seleccionados.")
+    else:
+        st.dataframe(datos_filtrados)
 
 def pagina_vpf():
     st.title("VPF - Presupuesto")
