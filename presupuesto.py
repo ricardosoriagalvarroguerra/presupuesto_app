@@ -40,8 +40,8 @@ def pagina_vpo():
     # Filtrar para consolidar únicamente las misiones
     misiones = datos[datos['categoria'] == 'Misiones']
 
-    # Consolidar por país y subcategoría
-    consolidado = misiones.groupby(['pais', 'subcategoria'], as_index=False)['sum_monto'].sum()
+    # Consolidar por país, categoría y subcategoría
+    consolidado = misiones.groupby(['pais', 'categoria', 'subcategoria'], as_index=False)['sum_monto'].sum()
 
     # Calcular totales por país
     totales_por_pais = consolidado.groupby('pais', as_index=False)['sum_monto'].sum()
@@ -53,10 +53,16 @@ def pagina_vpo():
     for pais in totales_por_pais['pais'].unique():
         # Crear contenedor expandible por país
         with st.expander(f"{pais} - Total: {totales_por_pais[totales_por_pais['pais'] == pais]['sum_monto'].values[0]:,.2f}"):
-            # Mostrar las subcategorías y montos del país
-            subcategorias_pais = consolidado[consolidado['pais'] == pais]
-            for _, row in subcategorias_pais.iterrows():
-                st.markdown(f"- **{row['subcategoria']}:** {row['sum_monto']:,.2f}")
+            # Obtener las categorías del país
+            categorias_pais = consolidado[consolidado['pais'] == pais]['categoria'].unique()
+            for categoria in categorias_pais:
+                # Mostrar la categoría como un subtítulo
+                st.markdown(f"**{categoria}**")
+                
+                # Mostrar las subcategorías y montos de la categoría
+                subcategorias_categoria = consolidado[(consolidado['pais'] == pais) & (consolidado['categoria'] == categoria)]
+                for _, row in subcategorias_categoria.iterrows():
+                    st.markdown(f"- {row['subcategoria']}: **{row['sum_monto']:,.2f}**")
 
 # Menú de navegación con selectbox
 menu = st.sidebar.selectbox(
